@@ -1,5 +1,5 @@
 /*
- myhub.lk
+
  
     Ultrasonic sensor Pins:
         VCC: +5VDC
@@ -7,7 +7,7 @@
         Echo: Echo (OUTPUT) - Pin 12
         GND: GND
 */
-int buzzer = 5;
+int buzzer = 5;//For the Buzzer
 
 int trigPin = 11;    //Trig - green Jumper
 int echoPin = 12;    //Echo - yellow Jumper
