@@ -63,7 +63,7 @@ void loop()
   else if (cm < 30) {
     digitalWrite(buzzer, HIGH);
   }
-  // delay(50);
+  // delay(50) //deley 50 mseconds;
 }
 
 
