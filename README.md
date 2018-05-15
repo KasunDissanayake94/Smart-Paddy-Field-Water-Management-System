@@ -1,1 +1,2 @@
 Smart-Paddy-Field-Water-Management-System
+This project includes how to pass data to the Firebase RealTime Database and How to Retrieve data from Firebase Database.When the water level comes to certain level (Ex: 10cm) It sends String msg to the database.When user wants to stop water flowing for a perticular moment user updates database field and it will automatically uptades the esp modules too. So that we can get the data continuesly.
