@@ -1,4 +1,4 @@
-//Update code at 8.08pm 2018.5.1
+//Update code at 8.08pm 2018.8.30
 
 
 #include <ESP8266HTTPClient.h>
@@ -10,13 +10,26 @@
 #define FIREBASE_HOST "xxxxxx"
 #define FIREBASE_AUTH "xxxxxx"
 
+// defines pins numbers
+const int trigPin = 2;  //D4
+const int echoPin = 0;  //D3
+const int red = 13;  //D7
+const int green = 15;  //D8
+const int selenoid = 4; //D2
 
+
+
+// defines variables
+long duration;
+int distance;
+int switchValue;
+char distance2[3];
 
 void setup() {
 
  
   Serial.begin(9600);                                  //Serial connection
-  WiFi.begin("xxxxxx", "xxxxx");   //WiFi connection
+  WiFi.begin("xxxxxx", "xxxxxx");   //WiFi connection
  
   while (WiFi.status() != WL_CONNECTED) {  //Wait for the WiFI connection completion
  
@@ -26,16 +39,78 @@ void setup() {
   }
   Firebase.begin(FIREBASE_HOST, FIREBASE_AUTH);
 
+  pinMode(trigPin, OUTPUT); // Sets the trigPin as an Output
+pinMode(echoPin, INPUT); // Sets the echoPin as an Input
+pinMode(red, OUTPUT);
+pinMode(green, OUTPUT);
+pinMode(selenoid, OUTPUT);
 
  
 }
  
 void loop() {   
 
- 
-int version =Firebase.getInt("number");
-  Serial.println(version);
+digitalWrite(trigPin, LOW);
+delay(2);
 
+// Sets the trigPin on HIGH state for 10 micro seconds
+digitalWrite(trigPin, HIGH);
+delay(100);
+digitalWrite(trigPin, LOW);
+
+// Reads the echoPin, returns the sound wave travel time in microseconds
+duration = pulseIn(echoPin, HIGH);
+
+// Calculating the distance
+distance= duration*0.034/2;
+delay(1000);
+distance = 5 - distance ;
+
+Serial.println(distance);
+Firebase.setString("paddy_fields/0775704829/Kalutara1/waterLevel",String(distance));
+
+  //Get required water level
+  String required_water_level = Firebase.getString("paddy_fields/0775704829/Kalutara1/requiredWaterLevel");
+  //Get filling command
+  int isFilling = Firebase.getInt("paddy_fields/0775704829/Kalutara1/isFilling");
+
+  //if command to fill water (isFilling == 1)
+  if((isFilling) == 1){
+    Serial.println(required_water_level.toInt());
+    
+  if((required_water_level.toInt()) >= distance){    //requred is greter than current
+    //Sending Data and set data
+    
+  Firebase.setString("paddy_fields/0775704829/Kalutara1/waterLevel",String(distance));
+  //start selenoid valve
+  digitalWrite(selenoid,HIGH);
+    digitalWrite(green,HIGH);
+    digitalWrite(red,LOW);
+  
+  }else{    //required is lower or equal to current .Stop the water flow
+    //set isFilling to zero
+    Firebase.setInt("paddy_fields/0775704829/Kalutara1/isFilling",0);
+    //close selnoid valve
+    digitalWrite(selenoid,LOW);
+    digitalWrite(green,LOW);
+    digitalWrite(red,HIGH);
+    
+  }
+  }else if(isFilling == 0){
+    Serial.println("Is Filling is 0");
+    //close selenoid valve
+    digitalWrite(selenoid,LOW);
+    digitalWrite(green,LOW);
+    digitalWrite(red,HIGH);
+
+    
+  }
+  // handle error
+  if (Firebase.failed()) {
+      Serial.print("setting /number failed:");
+      Serial.println(Firebase.error());  
+  }
   delay(1000);
+
  
 }
